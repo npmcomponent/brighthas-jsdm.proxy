@@ -1,0 +1,16 @@
+{
+  "name": "jsdm.proxy",
+  "repo": "brighthas/jsdm.proxy",
+  "description": "bookapp",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "component/jquery": "*",
+    "component/emitter": "*"
+  },
+  "development": {},
+  "license": "MIT",
+  "scripts": [
+    "index.js"
+  ]
+}
