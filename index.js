@@ -1,4 +1,3 @@
-var sockets = require("socket.io-client");
 var uuid = require("uuid");
 var Emit  = require("emitter");
 
