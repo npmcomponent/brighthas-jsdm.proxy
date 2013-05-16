@@ -16,7 +16,9 @@ function Proxy(socket,domainName){
     var emitter4 =  this._emitter4 = new Emit;
 
     this._socket.on(this._domainName+"-query-result",function(rs){
-        emitter2.emit.apply(emitter2,rs);
+        var qid = rs.qid;
+        var data = rs.data;
+        emitter2.emit.call(emitter2,qid,data);
     })
 
 
@@ -30,44 +32,44 @@ function Proxy(socket,domainName){
     })
 
     this._socket.on(this._domainName+"-emit",function(event){
-        emitter.emit.apply(emitter,event);
+        emitter.emit.apply(emitter,arguments);
     })
 
 }
 
 Proxy.prototype = {
 
-        query:function(queryName,args,callback){
+    query:function(queryName,args,callback){
 
-            var qid = uuid();
-            this._emitter2.once(qid,callback);
-            this._socket.emit(this._domainName+"-query",{qid:qid,queryName:queryName,args:args});
+        var qid = uuid();
+        this._emitter2.once(qid,callback);
+        this._socket.emit(this._domainName+"-query",{qid:qid,queryName:queryName,args:args});
 
-        },
+    },
 
-        on:function(eventname,callback){
-            this.emitter.on(eventname,callback);
-            this.socket.emit(this._domainName+"-on",eventname);
-        },
+    on:function(eventname,callback){
+        this._emitter.on(eventname,callback);
+        this._socket.emit(this._domainName+"-on",eventname);
+    },
 
-        once:function(eventname,callback){
-            this.emitter.once(eventname,callback);
-            this.socket.emit(this._domainName+"-once",eventname);
-        },
-        
-        exec:function(commandName,args,callback){
-            var commandId = uuid();
-            this._emitter3.once(commandId,callback);
-            this.socket.emit(this._domainName+"-exec",{commandId:commandId,commandName:commandName,args:args});
-        },
-        
-        call:function(methodName,id,args,callback){
-            var callId = uuid();
-            this._emitter4.once(callId,callback);
-            this.socket.emit(this._domainName+"-call",{callId:callId,methodName:methodName,id:id,args:args});
-        }
-        
+    once:function(eventname,callback){
+        this._emitter.once(eventname,callback);
+        this._socket.emit(this._domainName+"-once",eventname);
+    },
+
+    exec:function(commandName,args,callback){
+        var commandId = uuid();
+        this._emitter3.once(commandId,callback);
+        this._socket.emit(this._domainName+"-exec",{commandId:commandId,commandName:commandName,args:args});
+    },
+
+    call:function(methodName,id,args,callback){
+        var callId = uuid();
+        this._emitter4.once(callId,callback);
+        this.socket.emit(this._domainName+"-call",{callId:callId,methodName:methodName,id:id,args:args});
+    }
+
 }
-    
+
 module.exports  =  Proxy;
 
