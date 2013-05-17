@@ -66,7 +66,7 @@ Proxy.prototype = {
     call:function(methodName,id,args,callback){
         var callId = uuid();
         this._emitter4.once(callId,callback);
-        this.socket.emit(this._domainName+"-call",{callId:callId,methodName:methodName,id:id,args:args});
+        this._socket.emit(this._domainName+"-call",{callId:callId,methodName:methodName,id:id,args:args});
     }
 
 }
