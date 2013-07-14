@@ -1,75 +1,90 @@
-var uuid = require("uuid");
+var jq = require("jquery");
 var Emit  = require("emitter");
+function Proxy(url){
+        
+        this._emitter = new Emit;
+        this._url = url;
+        this._events = {};
+        var self  =  this;
+        var timeout = 0;
+        
+        function loop(){
+            clearTimeout(timeout);
+            timeout = setTimeout(function(){
+                var esk = Object.keys(self._events);
+                
+                if(esk.length === 0);
+                else{ 
 
-function Proxy(socket,domainName){
-    this._domainName = domainName;
-    this._socket = socket;
-    var emitter =  this._emitter = new Emit;
-
-    // for query
-    var emitter2 = this._emitter2 = new Emit;
-
-    // for exec
-    var emitter3 = this._emitter3 = new Emit;
-
-    // for call
-    var emitter4 =  this._emitter4 = new Emit;
-
-    this._socket.on(this._domainName+"-query-result",function(rs){
-        var qid = rs.qid;
-        var data = rs.data;
-        emitter2.emit.call(emitter2,qid,data);
-    })
-
-
-    this._socket.on(this._domainName+"-exec-result",function(rs){
-        emitter3.emit.apply(emitter3,rs);
-    })
-
-
-    this._socket.on(this._domainName+"-call-result",function(rs){
-        emitter4.emit.apply(emitter4,rs);
-    })
-
-    this._socket.on(this._domainName+"-emit",function(event){
-        emitter.emit.apply(emitter,arguments);
-    })
-
-}
-
-Proxy.prototype = {
-
-    query:function(queryName,args,callback){
-
-        var qid = uuid();
-        this._emitter2.once(qid,callback);
-        this._socket.emit(this._domainName+"-query",{qid:qid,queryName:queryName,args:args});
-
-    },
-
-    on:function(eventname,callback){
-        this._emitter.on(eventname,callback);
-        this._socket.emit(this._domainName+"-on",eventname);
-    },
-
-    once:function(eventname,callback){
-        this._emitter.once(eventname,callback);
-        this._socket.emit(this._domainName+"-once",eventname);
-    },
-
-    exec:function(commandName,args,callback){
-        var commandId = uuid();
-        this._emitter3.once(commandId,callback);
-        this._socket.emit(this._domainName+"-exec",{commandId:commandId,commandName:commandName,args:args});
-    },
-
-    call:function(methodName,id,args,callback){
-        var callId = uuid();
-        this._emitter4.once(callId,callback);
-        this._socket.emit(this._domainName+"-call",{callId:callId,methodName:methodName,id:id,args:args});
+                    jq.post(self._url,{method:"on",events:JSON.stringify(self._events)},function(rs){
+                        for(var en in rs){
+                            if(self._events[en]){
+                                self._events[en] = rs[en].time;
+                            }
+                            self._emitter.emit.apply(self._emitter,rs[en].data);
+                        }
+                        loop();
+                        
+                    });
+                }    
+            },3000);
+        }
+        
+        this._loop = loop;
+        
+        loop();
     }
 
+    Proxy.prototype = {
+    
+        on:function(eventname,callback){
+            if(eventname in this._events){
+            }else{
+                this._events[eventname] = Date.now();
+            }
+            this._emitter.on(eventname,callback);
+            this._loop();
+        },
+        
+        once:function(eventname,callback){
+            if(eventname in this._events){
+            }else{
+                this._events[eventname] = Date.now();
+            }
+            this._emitter.once(eventname,callback); 
+            this._loop();
+        },
+        
+        exec:function(commandName,args,callback){
+          jq.post(this._url,{method:"exec",commandName:commandName,args:JSON.stringify(args)},function(avgs){
+            callback.apply(null,avgs);
+          })
+        },
+        
+        call:function(methodName,id,args,callback){
+          args = args?args:[];
+          jq.post(this._url,{method:"call",methodName:methodName,id:id,args:JSON.stringify(args)},function(avgs){
+            callback.apply(null,avgs);
+          }) 
+        },
+        
+        query:function(name,args,callback){
+          jq.post(this._url,{method:"query",queryName:name,args:JSON.stringify(args)},callback);
+        },
+        
+        empty:function(){
+            var self = this;
+            this._events = {};
+            var ks = Object.keys(this._events);
+            ks.forEach(function(k){
+                self._emitter.off(k);
+            })
+        },
+        
+        off:function(){
+            this._emitter.off.apply(this._emitter,arguments);
+        }
+        
 }
-
+    
 module.exports  =  Proxy;
-
