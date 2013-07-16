@@ -17,6 +17,7 @@ function Proxy(url){
                 else{ 
 
                     jq.post(self._url,{method:"on",events:JSON.stringify(self._events)},function(err,rs){
+                        rs = JSON.parse(rs);
                         for(var en in rs){
                             if(self._events[en]){
                                 self._events[en] = rs[en].time;
@@ -56,22 +57,24 @@ function Proxy(url){
         },
         
         exec:function(commandName,args,callback){
-          jq.post(this._url,{method:"exec",commandName:commandName,args:JSON.stringify(args)},function(err,avgs){
-            callback.apply(null,avgs);
+          jq.post(this._url,{method:"exec",commandName:commandName,args:JSON.stringify(args)},function(err,rs){
+            rs = JSON.parse(rs);
+            callback.apply(null,rs);
           })
         },
         
         call:function(methodName,id,args,callback){
           args = args?args:[];
-          jq.post(this._url,{method:"call",methodName:methodName,id:id,args:JSON.stringify(args)},function(err,avgs){
-            callback.apply(null,avgs);
+          jq.post(this._url,{method:"call",methodName:methodName,id:id,args:JSON.stringify(args)},function(err,rs){
+            rs = JSON.parse(rs);
+            callback.apply(null,rs);
           }) 
         },
         
         query:function(name,args,callback){
           jq.post(this._url,{method:"query",queryName:name,args:JSON.stringify(args)},function(err,rs){
-              
-                callback(rs);
+              rs = JSON.parse(rs);
+              callback(rs);
               
           });
         },
