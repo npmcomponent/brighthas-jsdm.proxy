@@ -88,7 +88,10 @@ function Proxy(url){
               try{
                 rs = JSON.parse(rs.text);
               }catch(e){
-                rs = undefined;
+                if(rs)
+                    rs = rs.text;
+                else
+                    rs = undefined;
               }
               callback(rs);
           });
