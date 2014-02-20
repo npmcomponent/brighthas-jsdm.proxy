@@ -1,0 +1,12 @@
+{
+  "name": "brighthas-jsdm.proxy",
+  "description": "bookapp",
+  "version": "0.1.1",
+  "keywords": [],
+  "dependencies": {
+    "component-emitter": "git://github.com/npmcomponent/component-emitter.git",
+    "visionmedia-superagent": "git://github.com/npmcomponent/visionmedia-superagent.git",
+    "gjohnson-uuid": "git://github.com/npmcomponent/gjohnson-uuid.git"
+  },
+  "license": "MIT"
+}

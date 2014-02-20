@@ -1,5 +1,5 @@
-var jq = require("superagent");
-var Emit  = require("emitter");
+var jq = require('visionmedia-superagent');
+var Emit  = require('component-emitter');
 function Proxy(url){
         
         this._emitter = new Emit;
